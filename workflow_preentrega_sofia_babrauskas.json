@@ -1,0 +1,364 @@
+{
+  "name": "Sofia_Babrauskas_Preentrega",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 59
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "45648d50-5a26-4f7f-9feb-60c6dfe5ef7d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://worldtimeapi.org/api/timezone/America/New_York",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "b7d30c27-e1f2-42e2-8f70-2b92eda9b050",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "sendTo": "example@email.com",
+        "subject": "Notificación horaria automática",
+        "message": "={{$json.email_body}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        -32
+      ],
+      "id": "9bff6915-ed01-4eab-8696-a08a06c37b8f",
+      "name": "Send a message",
+      "webhookId": "66df6dba-e5f5-4a1d-a028-8cfcaa2b5463",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Kev1PfmDrmyhKeLD",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bdbddfff-7c0b-49f9-8ca2-f102a1fd0781",
+              "name": "current_hour",
+              "value": "={{ new Date($json.datetime).getHours() }}",
+              "type": "number"
+            },
+            {
+              "id": "e1415500-735d-421c-84f2-27611e98cbe5",
+              "name": "time_period",
+              "value": "={{$json.hour < 12 ? 'morning' :   $json.hour < 18 ? 'afternoon' :   'night'}}",
+              "type": "string"
+            },
+            {
+              "id": "777bbf13-962a-4cc1-9aa9-9ba4d6bb9390",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        0
+      ],
+      "id": "9465e064-5b9d-4685-a488-be797125fe1a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.time_period}}",
+                    "rightValue": "morning",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e313f5f6-5b76-4e60-9c60-e545b02ae3c6"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "21d244b2-d078-4010-b922-f413c54f390f",
+                    "leftValue": "={{$json.time_period}}",
+                    "rightValue": "afternoon",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9640f009-9ee6-4b50-8708-1640cb3cdf4d",
+                    "leftValue": "={{$json.time_period}}",
+                    "rightValue": "night",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "1f04e218-195c-4a98-9cb4-aa4fc0286310",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "03ec5f24-1067-44fb-9d7d-74c59937b559",
+              "name": "email_body",
+              "value": "=Buenas noches 🌙   Actualmente es de noche en New York. Hora detectada: {{$json.current_hour}} hs.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        112
+      ],
+      "id": "adf4fa5a-0925-4d18-b1ce-5dc4a72b6ba2",
+      "name": "Night"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "627abc9c-9d86-46d9-bd3e-dd2172b12420",
+              "name": "email_body",
+              "value": "=Buenas tardes 🌤️   Actualmente es de tarde en New York. Hora detectada: {{$json.current_hour}} hs.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -32
+      ],
+      "id": "7bf7e1e3-265e-4962-acf6-170e2b4f4d82",
+      "name": "Afternoon"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6c8a2f5e-1009-49be-8397-a723099baa6b",
+              "name": "email_body",
+              "value": "=Buen día ☀️   Actualmente es de mañana en New York. Hora detectada: {{$json.current_hour}} hs. ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -176
+      ],
+      "id": "2b4b3b9d-8f5d-44e2-a251-1abea1541945",
+      "name": "Morning"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Morning",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Afternoon",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Night",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Night": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Afternoon": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Morning": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "2ab4c2be-3575-4a2e-86fe-0d15c4193f0b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "965d07c68606c75be1b355d192ac411716d330c54d752b5f70f54d95cecc1487"
+  },
+  "id": "YJutRLL5g8fCi1N0",
+  "tags": []
+}
